@@ -1,6 +1,6 @@
-# Run logger
+# Workout logger relay example
 
-This is the GraphQL and Relay back end for a simple run logger.
+This is the GraphQL and Relay back end for a simple workout logger.
 
 ## Installation
 
@@ -32,4 +32,4 @@ npm start
 ## License
 
 Relay Starter Kit is [BSD licensed](./LICENSE). We also provide an additional [patent grant](./PATENTS).
-# relay-test
+
