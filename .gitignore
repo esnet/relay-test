@@ -1,5 +1,5 @@
-.DS_Store
 node_modules
+*.log
+.DS_Store
 npm-debug.log
-data/schema.graphql
-.idea/
+keyfile.json

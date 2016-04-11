@@ -1,143 +1,169 @@
-/**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
- *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
- */
 
+// GraphQL types
 import {
-  GraphQLBoolean,
-  GraphQLFloat,
-  GraphQLID,
-  GraphQLInt,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLSchema,
-  GraphQLString,
-} from 'graphql';
+    GraphQLBoolean,
+    GraphQLFloat,
+    GraphQLID,
+    GraphQLInt,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLSchema,
+    GraphQLString,
+} from "graphql";
 
+// Relay helpers
 import {
-  connectionArgs,
-  connectionDefinitions,
-  connectionFromArray,
-  fromGlobalId,
-  globalIdField,
-  mutationWithClientMutationId,
-  nodeDefinitions,
-} from 'graphql-relay';
+    connectionArgs,
+    connectionDefinitions,
+    connectionFromPromisedArray,
+    fromGlobalId,
+    globalIdField,
+    mutationWithClientMutationId,
+    nodeDefinitions
+} from "graphql-relay";
 
+//Database methods and objects
 import {
-  // Import methods that your schema can use to interact with your database
-  User,
-  Widget,
-  getUser,
-  getViewer,
-  getWidget,
-  getWidgets,
-} from './database';
+    User,
+    Workout,
+    getUser,
+    getViewer,
+    getWorkout,
+    getWorkouts,
+} from "./database";
 
 /**
- * We get the node interface and field from the Relay library.
+ * Relay wants a "node" interface. We get the node interface
+ * and field from the Relay library.
  *
- * The first method defines the way we resolve an ID to its object.
- * The second defines the way we resolve an object to its GraphQL type.
+ * This nodeDefinitions() function returns an object with:
+ *   - nodeInterface
+ *   - nodeField
+ * To generate this it takes in two functions:
+ *   - the first defines the way we resolve an globalId to its object.
+ *   - the second defines the way we resolve an object to its GraphQL Type.
  */
 var {nodeInterface, nodeField} = nodeDefinitions(
-  (globalId) => {
-    var {type, id} = fromGlobalId(globalId);
-    if (type === 'User') {
-      return getUser(id);
-    } else if (type === 'Widget') {
-      return getWidget(id);
-    } else {
-      return null;
+
+    (globalId) => {
+        var {type, id} = fromGlobalId(globalId);
+        if (type === 'User') {
+            return getUser(id);
+        } else if (type === 'Workout') {
+            return getWorkout(id);
+        } else {
+            return null;
+        }
+    },
+    (obj) => {
+        if (obj instanceof User) {
+            return userType;
+        } else if (obj instanceof Workout)  {
+            return workoutType;
+        } else {
+            return null;
+        }
     }
-  },
-  (obj) => {
-    if (obj instanceof User) {
-      return userType;
-    } else if (obj instanceof Widget)  {
-      return widgetType;
-    } else {
-      return null;
-    }
-  }
 );
 
 /**
- * Define your own types here
+ * Define a person as a userType
  */
-
-var userType = new GraphQLObjectType({
-  name: 'User',
-  description: 'A person who uses our app',
-  fields: () => ({
-    id: globalIdField('User'),
-    widgets: {
-      type: widgetConnection,
-      description: 'A person\'s collection of widgets',
-      args: connectionArgs,
-      resolve: (_, args) => connectionFromArray(getWidgets(), args),
-    },
-  }),
-  interfaces: [nodeInterface],
-});
-
-var widgetType = new GraphQLObjectType({
-  name: 'Widget',
-  description: 'A shiny widget',
-  fields: () => ({
-    id: globalIdField('Widget'),
-    name: {
-      type: GraphQLString,
-      description: 'The name of the widget',
-    },
-  }),
-  interfaces: [nodeInterface],
+const userType = new GraphQLObjectType({
+    name: "User",
+    description: "A person who uses our app",
+    fields: () => ({
+        id: globalIdField("User"),
+        workouts: {
+            type: workoutConnection,
+            description: "A person's collection of workouts",
+            args: connectionArgs,
+            resolve: (_, args) => {
+                return connectionFromPromisedArray(getWorkouts(), args)
+            }
+        },
+        workout: {
+            type: workoutType,
+            description: 'A single workout',
+            args: {
+                id: {
+                    type: new GraphQLNonNull(GraphQLID),
+                    description: 'The id of the workout',
+                },
+            },
+            resolve: (user, args) => {
+                const { id } = fromGlobalId(args.id);
+                return getWorkout(id);
+            },
+        }
+    }),
+    interfaces: [nodeInterface],
 });
 
 /**
- * Define your own connection types here
+ * Define a workout that a person may do as a workoutType
  */
-var {connectionType: widgetConnection} =
-  connectionDefinitions({name: 'Widget', nodeType: widgetType});
+const workoutType = new GraphQLObjectType({
+    name: "Workout",
+    description: "A workout activity logged by a person",
+    fields: () => ({
+        id: globalIdField("Workout"),
+        name: {
+            type: GraphQLString,
+            description: "How did the workout go?",
+        },
+        distance: {
+            type: GraphQLFloat,
+            description: "How far was the workout, in miles",
+        },
+        duration: {
+            type: GraphQLInt,
+            description: "How long did the workout take?",
+        }
+    }),
+    interfaces: [nodeInterface],
+});
 
 /**
- * This is the type that will be the root of our query,
- * and the entry point into our schema.
+ * Connections between our objects
  */
-var queryType = new GraphQLObjectType({
-  name: 'Query',
-  fields: () => ({
-    node: nodeField,
-    // Add your own root fields here
-    viewer: {
-      type: userType,
-      resolve: () => getViewer(),
-    },
-  }),
+const {connectionType: workoutConnection} = connectionDefinitions({
+    name: "Workout",
+    nodeType: workoutType
+});
+
+/**
+ * Schema entry point
+ */
+const queryType = new GraphQLObjectType({
+    name: "Query",
+    fields: () => ({
+        node: nodeField,
+        // Add your own root fields here
+        viewer: {
+            type: userType,
+            resolve: () => getViewer(),
+        },
+    }),
 });
 
 /**
  * This is the type that will be the root of our mutations,
  * and the entry point into performing writes in our schema.
  */
-var mutationType = new GraphQLObjectType({
-  name: 'Mutation',
-  fields: () => ({
-    // Add your own mutations here
-  })
+const mutationType = new GraphQLObjectType({
+    name: 'Mutation',
+    fields: () => ({
+        // Add your own mutations here
+    })
 });
 
 /**
- * Finally, we construct our schema (whose starting query type is the query
- * type we defined above) and export it.
+ * Finally, we construct our schema using the query entry point
  */
 export var Schema = new GraphQLSchema({
-  query: queryType,
-  // Uncomment the following after adding some mutation fields:
-  // mutation: mutationType
+    query: queryType,
+    // Uncomment the following after adding some mutation fields:
+    // mutation: mutationType
 });

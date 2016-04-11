@@ -100,7 +100,7 @@
             },
             {
               "kind": "OBJECT",
-              "name": "Widget",
+              "name": "Workout",
               "ofType": null
             }
           ]
@@ -127,8 +127,8 @@
               "deprecationReason": null
             },
             {
-              "name": "widgets",
-              "description": "A person's collection of widgets",
+              "name": "workouts",
+              "description": "A person's collection of workouts",
               "args": [
                 {
                   "name": "after",
@@ -173,7 +173,7 @@
               ],
               "type": {
                 "kind": "OBJECT",
-                "name": "WidgetConnection",
+                "name": "WorkoutConnection",
                 "ofType": null
               },
               "isDeprecated": false,
@@ -213,7 +213,7 @@
         },
         {
           "kind": "OBJECT",
-          "name": "WidgetConnection",
+          "name": "WorkoutConnection",
           "description": "A connection to a list of items.",
           "fields": [
             {
@@ -241,7 +241,7 @@
                 "name": null,
                 "ofType": {
                   "kind": "OBJECT",
-                  "name": "WidgetEdge",
+                  "name": "WorkoutEdge",
                   "ofType": null
                 }
               },
@@ -333,7 +333,7 @@
         },
         {
           "kind": "OBJECT",
-          "name": "WidgetEdge",
+          "name": "WorkoutEdge",
           "description": "An edge in a connection.",
           "fields": [
             {
@@ -342,7 +342,7 @@
               "args": [],
               "type": {
                 "kind": "OBJECT",
-                "name": "Widget",
+                "name": "Workout",
                 "ofType": null
               },
               "isDeprecated": false,
@@ -372,8 +372,8 @@
         },
         {
           "kind": "OBJECT",
-          "name": "Widget",
-          "description": "A shiny widget",
+          "name": "Workout",
+          "description": "A workout activity logged by a person",
           "fields": [
             {
               "name": "id",
@@ -393,11 +393,35 @@
             },
             {
               "name": "name",
-              "description": "The name of the widget",
+              "description": "How did the workout go?",
               "args": [],
               "type": {
                 "kind": "SCALAR",
                 "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "distance",
+              "description": "How far was the workout, in miles",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "duration",
+              "description": "How long did the workout take?",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Int",
                 "ofType": null
               },
               "isDeprecated": false,
@@ -412,6 +436,16 @@
               "ofType": null
             }
           ],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "Float",
+          "description": "The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point). ",
+          "fields": null,
+          "inputFields": null,
+          "interfaces": null,
           "enumValues": null,
           "possibleTypes": null
         },
